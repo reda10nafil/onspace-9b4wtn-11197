@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-nati
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { theme, typography, borderRadius, spacing } from '../../constants/theme';
 import { useInventory } from '../../contexts/InventoryContext';
@@ -22,7 +22,7 @@ export default function SettingsScreen() {
     try {
       // Generate CSV content
       let csvContent = 'SKU,Tipo Pelle,Posizione,Status,Prezzo Acquisto,Prezzo Vendita,Lunghezza,Larghezza,Peso,Note\n';
-      
+
       products.forEach((product) => {
         csvContent += `"${product.sku}",`;
         csvContent += `"${product.furType}",`;
@@ -66,6 +66,27 @@ export default function SettingsScreen() {
           <Text style={styles.headerTitle}>Impostazioni</Text>
         </View>
 
+        {/* Automazioni Smart - NEW */}
+        <Text style={styles.sectionTitle}>AUTOMAZIONI SMART</Text>
+
+        <Pressable
+          style={styles.settingRow}
+          onPress={() => router.push('/settings/automations')}
+        >
+          <View style={styles.settingLeft}>
+            <View style={[styles.iconContainer, { backgroundColor: theme.primary }]}>
+              <MaterialIcons name="auto-fix-high" size={24} color="#000" />
+            </View>
+            <View style={styles.settingContent}>
+              <Text style={styles.settingTitle}>Centro Automazioni</Text>
+              <Text style={styles.settingDescription}>
+                Spostamenti, Vendite e Audit rapidi
+              </Text>
+            </View>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={theme.textSecondary} />
+        </Pressable>
+
         {/* GESTIONE INVENTARIO */}
         <Text style={styles.sectionTitle}>GESTIONE INVENTARIO</Text>
 
@@ -107,6 +128,42 @@ export default function SettingsScreen() {
 
         <Pressable
           style={styles.settingRow}
+          onPress={() => router.push('/settings/layout-builder')}
+        >
+          <View style={styles.settingLeft}>
+            <View style={[styles.iconContainer, { backgroundColor: '#8B5CF6' }]}>
+              <MaterialIcons name="dashboard-customize" size={24} color="#FFF" />
+            </View>
+            <View style={styles.settingContent}>
+              <Text style={styles.settingTitle}>Configura Layout Aggiungi</Text>
+              <Text style={styles.settingDescription}>
+                Personalizza ordine e dimensione campi
+              </Text>
+            </View>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={theme.textSecondary} />
+        </Pressable>
+
+        <Pressable
+          style={styles.settingRow}
+          onPress={() => router.push('/settings/trash')}
+        >
+          <View style={styles.settingLeft}>
+            <View style={[styles.iconContainer, { backgroundColor: theme.error }]}>
+              <MaterialIcons name="delete" size={24} color="#FFF" />
+            </View>
+            <View style={styles.settingContent}>
+              <Text style={styles.settingTitle}>Cestino</Text>
+              <Text style={styles.settingDescription}>
+                Recupera o elimina prodotti cancellati
+              </Text>
+            </View>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={theme.textSecondary} />
+        </Pressable>
+
+        <Pressable
+          style={styles.settingRow}
           onPress={() => router.push('/settings/locations')}
         >
           <View style={styles.settingLeft}>
@@ -117,6 +174,28 @@ export default function SettingsScreen() {
               <Text style={styles.settingTitle}>Gestisci Posizioni</Text>
               <Text style={styles.settingDescription}>
                 Modifica locazioni disponibili
+              </Text>
+            </View>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color={theme.textSecondary} />
+        </Pressable>
+
+
+        {/* CONDIVISIONE */}
+        <Text style={styles.sectionTitle}>CONDIVISIONE</Text>
+
+        <Pressable
+          style={styles.settingRow}
+          onPress={() => router.push('/settings/share')}
+        >
+          <View style={styles.settingLeft}>
+            <View style={[styles.iconContainer, { backgroundColor: '#06B6D4' }]}>
+              <MaterialIcons name="share" size={24} color="#FFF" />
+            </View>
+            <View style={styles.settingContent}>
+              <Text style={styles.settingTitle}>Configurazione Condivisione</Text>
+              <Text style={styles.settingDescription}>
+                Personalizza info condivise Cliente/Professionista
               </Text>
             </View>
           </View>

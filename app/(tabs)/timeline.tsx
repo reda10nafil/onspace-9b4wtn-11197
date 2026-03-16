@@ -26,6 +26,8 @@ export default function TimelineScreen() {
       case 'sold': return 'sell';
       case 'scanned': return 'qr-code-scanner';
       case 'photo_added': return 'add-photo-alternate';
+      case 'deleted': return 'delete';
+      case 'restored': return 'restore-from-trash';
       default: return 'circle';
     }
   };
@@ -38,6 +40,8 @@ export default function TimelineScreen() {
       case 'sold': return '#10B981';
       case 'scanned': return '#8B5CF6';
       case 'photo_added': return '#F59E0B';
+      case 'deleted': return theme.notification;
+      case 'restored': return '#10B981';
       default: return theme.textSecondary;
     }
   };
@@ -64,6 +68,10 @@ export default function TimelineScreen() {
       case 'photo_added':
         const count = event.details.photoCount || 1;
         return `${sku} - ${count} foto aggiunte`;
+      case 'deleted':
+        return `${sku} - Spostato nel Cestino`;
+      case 'restored':
+        return `${sku} - Ripristinato dal Cestino`;
       default:
         return `${sku} - Evento`;
     }
@@ -79,7 +87,7 @@ export default function TimelineScreen() {
   const filterByDate = (event: TimelineEvent): boolean => {
     const eventDate = new Date(event.timestamp);
     const now = new Date();
-    
+
     switch (dateFilter) {
       case 'today':
         return eventDate.toDateString() === now.toDateString();
@@ -116,8 +124,8 @@ export default function TimelineScreen() {
       </View>
 
       {/* Type Filters */}
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.filterScrollContent}
         style={styles.filterScroll}
@@ -173,8 +181,8 @@ export default function TimelineScreen() {
       </ScrollView>
 
       {/* Date Filters */}
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.dateFilterScrollContent}
         style={styles.dateFilterScroll}
@@ -228,9 +236,9 @@ export default function TimelineScreen() {
           </View>
         )}
 
-        {filteredTimeline.map((event) => (
+        {filteredTimeline.map((event, index) => (
           <Pressable
-            key={event.id}
+            key={`${event.id}-${index}`}
             style={styles.timelineItem}
             onPress={() => handleEventPress(event)}
           >
@@ -297,12 +305,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: theme.surface,
     borderRadius: borderRadius.full,
     borderWidth: 1,
     borderColor: theme.border,
+    minHeight: 48,
+    minWidth: 80,
   },
   filterChipActive: {
     backgroundColor: theme.primary,
@@ -318,12 +330,16 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   dateChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: theme.surface,
     borderRadius: borderRadius.medium,
     borderWidth: 1,
     borderColor: theme.border,
+    minHeight: 48,
+    minWidth: 90,
   },
   dateChipActive: {
     backgroundColor: `${theme.primary}30`,
