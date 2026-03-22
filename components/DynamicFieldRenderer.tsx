@@ -6,6 +6,8 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { theme, typography, borderRadius, spacing } from '../constants/theme';
 import { LayoutField, FieldSize } from '../contexts/LayoutContext';
 import { CustomField } from '../contexts/CustomFieldsContext';
@@ -492,6 +494,77 @@ export function DynamicFieldRenderer({
                                 )}
                             </View>
                         )}
+                        {customField.type === 'document' && (
+                            <View style={styles.documentContainer}>
+                                {customFieldValues[field.id] && Array.isArray(customFieldValues[field.id]) && customFieldValues[field.id].map((docUri: string, index: number) => (
+                                    <View key={index} style={styles.documentItem}>
+                                        <MaterialIcons name="insert-drive-file" size={24} color={theme.primary} />
+                                        <Text style={styles.documentName} numberOfLines={1}>{docUri.split('/').pop() || 'Documento Allegato'}</Text>
+                                        <Pressable onPress={() => {
+                                            const newDocs = [...customFieldValues[field.id]];
+                                            newDocs.splice(index, 1);
+                                            setCustomFieldValues(prev => ({ ...prev, [field.id]: newDocs }));
+                                        }}>
+                                            <MaterialIcons name="delete" size={24} color={theme.error} />
+                                        </Pressable>
+                                    </View>
+                                ))}
+                                <Pressable
+                                    style={styles.uploadButton}
+                                    onPress={async () => {
+                                        try {
+                                            const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true });
+                                            if (!result.canceled && result.assets && result.assets.length > 0) {
+                                                const newDoc = result.assets[0].uri;
+                                                const currentDocs = customFieldValues[field.id] || [];
+                                                setCustomFieldValues(prev => ({ ...prev, [field.id]: [...currentDocs, newDoc] }));
+                                            }
+                                        } catch (e) { console.error('Doc Picker err', e); }
+                                    }}
+                                >
+                                    <MaterialIcons name="upload-file" size={20} color={theme.primary} />
+                                    <Text style={styles.uploadButtonText}>Allega File / PDF</Text>
+                                </Pressable>
+                            </View>
+                        )}
+                        {customField.type === 'images' && (
+                            <View>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                                    {customFieldValues[field.id] && Array.isArray(customFieldValues[field.id]) && customFieldValues[field.id].map((imgUri: string, index: number) => (
+                                        <View key={index} style={styles.customImageWrapper}>
+                                            <Image source={{ uri: imgUri }} style={styles.customFieldImage} contentFit="cover" />
+                                            <Pressable style={styles.customImageDelete} onPress={() => {
+                                                const newImgs = [...customFieldValues[field.id]];
+                                                newImgs.splice(index, 1);
+                                                setCustomFieldValues(prev => ({ ...prev, [field.id]: newImgs }));
+                                            }}>
+                                                <MaterialIcons name="cancel" size={20} color="#FFF" />
+                                            </Pressable>
+                                        </View>
+                                    ))}
+                                </ScrollView>
+                                <Pressable
+                                    style={styles.uploadButton}
+                                    onPress={async () => {
+                                        try {
+                                            const result = await ImagePicker.launchImageLibraryAsync({
+                                                mediaTypes: ['images'],
+                                                allowsMultipleSelection: true,
+                                                quality: 0.8,
+                                            });
+                                            if (!result.canceled && result.assets && result.assets.length > 0) {
+                                                const newImages = result.assets.map(a => a.uri);
+                                                const currentImages = customFieldValues[field.id] || [];
+                                                setCustomFieldValues(prev => ({ ...prev, [field.id]: [...currentImages, ...newImages] }));
+                                            }
+                                        } catch (e) { console.error('Image Picker err', e); }
+                                    }}
+                                >
+                                    <MaterialIcons name="add-photo-alternate" size={20} color={theme.primary} />
+                                    <Text style={styles.uploadButtonText}>Aggiungi Foto</Text>
+                                </Pressable>
+                            </View>
+                        )}
                     </View>
                 );
             }
@@ -646,6 +719,64 @@ const styles = StyleSheet.create({
     picker: {
         height: 50,
         backgroundColor: 'transparent',
+    },
+    documentContainer: {
+        gap: 8,
+    },
+    documentItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.surface,
+        padding: 12,
+        borderRadius: borderRadius.medium,
+        borderWidth: 1,
+        borderColor: theme.border,
+        gap: 12,
+    },
+    documentName: {
+        ...typography.body,
+        fontSize: 14,
+        flex: 1,
+        color: theme.textPrimary,
+    },
+    uploadButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: `${theme.primary}15`,
+        padding: 14,
+        borderRadius: borderRadius.medium,
+        borderWidth: 1,
+        borderStyle: 'dashed',
+        borderColor: theme.primary,
+        gap: 8,
+        marginTop: 4,
+    },
+    uploadButtonText: {
+        ...typography.buttonPrimary,
+        color: theme.primary,
+        fontSize: 14,
+    },
+    customImageWrapper: {
+        position: 'relative',
+        marginRight: 10,
+        borderRadius: borderRadius.medium,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: theme.border,
+    },
+    customFieldImage: {
+        width: 100,
+        height: 100,
+        backgroundColor: theme.backgroundSecondary,
+    },
+    customImageDelete: {
+        position: 'absolute',
+        top: 6,
+        right: 6,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 12,
+        padding: 4,
     },
 });
 

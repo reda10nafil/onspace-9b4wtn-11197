@@ -1,4 +1,4 @@
-﻿// FurInventory Pro - Add Product Screen
+// FurInventory Pro - Add Product Screen
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, TextInput, KeyboardAvoidingView, Platform, Alert, useWindowDimensions, Modal } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { ActionSheetIOS } from 'react-native';
 import { Image } from 'expo-image';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { theme, typography, borderRadius, spacing, shadows } from '../../constants/theme';
 import { useInventory } from '../../contexts/InventoryContext';
 import { FUR_TYPES } from '../../constants/config';
@@ -24,6 +25,7 @@ export default function AddProductScreen() {
   const { layout, getVisibleFields, loading: layoutLoading } = useLayout();
 
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
+  const [showDatePickerMap, setShowDatePickerMap] = useState<Record<string, boolean>>({});
 
   const [formData, setFormData] = useState({
     sku: '',
@@ -345,21 +347,7 @@ export default function AddProductScreen() {
       const customField = customFields.find(cf => cf.id === field.id);
       if (!customField) return null;
 
-      // === Document Type ===
-      if (customField.type === 'document' || customField.uiType === 'document') {
-        const val = customFieldValues[field.id];
-        return (
-          <View key={field.id} style={[styles.dynamicField, sizeStyle]}>
-            {renderLabel(customField.name, customField.required)}
-            <Pressable style={styles.inputWithIcon} onPress={() => pickDocument(field.id)}>
-              <MaterialIcons name="attachment" size={20} color={theme.textSecondary} style={styles.inputIcon} />
-              <Text style={{ flex: 1, color: val ? theme.textPrimary : theme.textSecondary }} numberOfLines={1}>
-                {val ? val : 'Allega Documento'}
-              </Text>
-            </Pressable>
-          </View>
-        );
-      }
+
 
       const getDynamicOptionsList = (cf: CustomField) => {
         if (cf.linkTo === 'locations') return locations.map(l => ({ id: l.id, label: l.label }));
@@ -528,6 +516,75 @@ export default function AddProductScreen() {
                 </Pressable>
               )}
             </ScrollView>
+          </View>
+        );
+      }
+
+      // === Date ===
+      if (customField.type === 'date') {
+        const val = customFieldValues[field.id];
+        return (
+          <View key={field.id} style={[styles.dynamicField, sizeStyle]}>
+            {renderLabel(customField.name, customField.required)}
+            <Pressable
+              style={[styles.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+              onPress={() => setShowDatePickerMap(prev => ({ ...prev, [field.id]: true }))}
+            >
+              <Text style={{ color: val ? theme.textPrimary : theme.textSecondary, fontSize: 16 }}>
+                {val ? new Date(val).toLocaleDateString('it-IT') : `Seleziona Data`}
+              </Text>
+              <MaterialIcons name="calendar-today" size={24} color={theme.textSecondary} />
+            </Pressable>
+            {showDatePickerMap[field.id] && (
+              <DateTimePicker
+                value={val ? new Date(val) : new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(_, selectedDate) => {
+                  setShowDatePickerMap(prev => ({ ...prev, [field.id]: false }));
+                  if (selectedDate) setCustomFieldValues(prev => ({ ...prev, [field.id]: selectedDate.toISOString() }));
+                }}
+              />
+            )}
+          </View>
+        );
+      }
+
+      // === Document ===
+      if (customField.type === 'document') {
+        const docs = customFieldValues[field.id] || [];
+        return (
+          <View key={field.id} style={[styles.dynamicField, { width: '100%' }]}>
+            {renderLabel(customField.name, customField.required)}
+            <View style={{ gap: 8 }}>
+              {docs.map((docUri: string, index: number) => (
+                <View key={index} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: theme.surface, padding: 12, borderRadius: 12, borderWidth: 1, borderColor: theme.border }}>
+                  <MaterialIcons name="insert-drive-file" size={24} color={theme.primary} />
+                  <Text style={{ flex: 1, marginLeft: 12, fontSize: 14, color: theme.textPrimary }} numberOfLines={1}>{docUri.split('/').pop() || 'Documento'}</Text>
+                  <Pressable onPress={() => {
+                    const newDocs = [...docs];
+                    newDocs.splice(index, 1);
+                    setCustomFieldValues(prev => ({ ...prev, [field.id]: newDocs }));
+                  }}>
+                    <MaterialIcons name="delete" size={24} color={theme.error} />
+                  </Pressable>
+                </View>
+              ))}
+              <Pressable
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 14, borderRadius: 12, borderWidth: 1, borderStyle: 'dashed', borderColor: theme.primary, backgroundColor: `${theme.primary}10`, marginTop: 4 }}
+                onPress={async () => {
+                  try {
+                    const result = await DocumentPicker.getDocumentAsync({ copyToCacheDirectory: true });
+                    if (!result.canceled && result.assets && result.assets.length > 0) {
+                      setCustomFieldValues(prev => ({ ...prev, [field.id]: [...(customFieldValues[field.id] || []), result.assets[0].uri] }));
+                    }
+                  } catch (e) { console.error('Doc Picker err', e); }
+                }}
+              >
+                <MaterialIcons name="upload-file" size={20} color={theme.primary} />
+                <Text style={{ marginLeft: 8, color: theme.primary, fontWeight: 'bold' }}>Allega Documento</Text>
+              </Pressable>
+            </View>
           </View>
         );
       }

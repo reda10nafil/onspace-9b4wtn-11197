@@ -1,6 +1,6 @@
 // FurInventory Pro - Product Detail Screen
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert, useWindowDimensions, Share, Modal, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, useWindowDimensions, Share, Modal, StatusBar, Linking } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -890,7 +890,7 @@ export default function ProductDetailScreen() {
                   }
 
                   // Array / Multi Choice -> Chips
-                  if (Array.isArray(value) || field.type === 'multi_choice') {
+                  if (field.type === 'multi_choice' || (Array.isArray(value) && field.type !== 'images' && field.type !== 'document')) {
                     const displayArray = Array.isArray(value) ? value : [value];
                     return (
                       <View key={field.id || index} style={styles.customTagsCard}>
@@ -913,6 +913,48 @@ export default function ProductDetailScreen() {
                             )
                           })}
                         </View>
+                      </View>
+                    );
+                  }
+
+                  // Document -> Pressable Link
+                  if (field.type === 'document') {
+                    const docs = Array.isArray(value) ? value : [value];
+                    return (
+                      <View key={field.id || index} style={styles.customNotesCard}>
+                        <View style={styles.customNotesHeader}>
+                          <MaterialIcons name={field.icon as any || 'description'} size={18} color={theme.textSecondary} />
+                          <Text style={styles.customFieldLabel}>{field.name}</Text>
+                        </View>
+                        <View style={{ gap: 8, marginTop: 8 }}>
+                          {docs.map((docUri, i) => (
+                            <Pressable key={i} style={styles.customDocumentItem} onPress={() => Linking.openURL(docUri).catch(() => Alert.alert('Errore', 'Impossibile aprire il file'))}>
+                              <MaterialIcons name="insert-drive-file" size={20} color={theme.primary} />
+                              <Text style={styles.customDocumentText} numberOfLines={1}>{docUri.split('/').pop() || 'Documento Allegato'}</Text>
+                              <MaterialIcons name="open-in-new" size={20} color={theme.textSecondary} />
+                            </Pressable>
+                          ))}
+                        </View>
+                      </View>
+                    );
+                  }
+
+                  // Images
+                  if (field.type === 'images') {
+                    const imgs = Array.isArray(value) ? value : [value];
+                    return (
+                      <View key={field.id || index} style={styles.customNotesCard}>
+                        <View style={styles.customNotesHeader}>
+                          <MaterialIcons name={field.icon as any || 'image'} size={18} color={theme.textSecondary} />
+                          <Text style={styles.customFieldLabel}>{field.name}</Text>
+                        </View>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}>
+                          {imgs.map((imgUri, i) => (
+                            <View key={i} style={styles.customNestedImageWrap}>
+                              <Image source={{ uri: imgUri }} style={styles.customNestedImage} contentFit="cover" />
+                            </View>
+                          ))}
+                        </ScrollView>
                       </View>
                     );
                   }
@@ -1668,5 +1710,33 @@ const styles = StyleSheet.create({
   customTagText: {
     ...typography.caption,
     color: theme.textPrimary,
+  },
+  customDocumentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.backgroundSecondary,
+    padding: 12,
+    borderRadius: borderRadius.medium,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: theme.border,
+  },
+  customDocumentText: {
+    ...typography.body,
+    fontSize: 14,
+    color: theme.textPrimary,
+    flex: 1,
+  },
+  customNestedImageWrap: {
+    width: 100,
+    height: 100,
+    borderRadius: borderRadius.medium,
+    marginRight: 12,
+    overflow: 'hidden',
+    backgroundColor: theme.backgroundSecondary,
+  },
+  customNestedImage: {
+    width: '100%',
+    height: '100%',
   }
 });
