@@ -112,9 +112,11 @@ export default function CustomRunnerScreen() {
             const product = products.find(p => p.id === scannedProductId);
             if (!product) return false;
 
-            updateProduct(product.id, {
-                customFields: { ...product.customFields, [fieldName]: fieldValue },
-            });
+            const notes = product.technicalNotes || '';
+            const entry = `[${fieldName}=${fieldValue}]`;
+            if (!notes.includes(entry)) {
+                updateProduct(product.id, { technicalNotes: notes ? `${notes}\n${entry}` : entry });
+            }
             showFeedback(`✏️ ${fieldName} = ${fieldValue}`);
             setCompletedCount(c => c + 1);
             return true;
@@ -220,9 +222,11 @@ export default function CustomRunnerScreen() {
             } else if (step.type === 'set_field' && tmpProductId) {
                 const product = products.find(p => p.id === tmpProductId);
                 if (product) {
-                    updateProduct(product.id, {
-                        customFields: { ...product.customFields, [step.config.fieldName || '']: step.config.fieldValue || '' },
-                    });
+                    const notes = product.technicalNotes || '';
+                    const entry = `[${step.config.fieldName || ''}=${step.config.fieldValue || ''}]`;
+                    if (!notes.includes(entry)) {
+                        updateProduct(product.id, { technicalNotes: notes ? `${notes}\n${entry}` : entry });
+                    }
                     setCompletedCount(c => c + 1);
                 }
             } else if (step.type === 'mark_sold' && tmpProductId) {

@@ -1,6 +1,6 @@
 // FurInventory Pro - Home Screen
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert, TextInput, Modal, FlatList } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -403,10 +403,9 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Products Grid */}
-      <FlashList
+      <FlatList
         data={filteredProducts}
         renderItem={renderProductCard}
-        estimatedItemSize={240}
         numColumns={2}
         contentContainerStyle={{
           paddingHorizontal: spacing.screenPadding,

@@ -129,7 +129,7 @@ export default function ScannerActionScreen() {
 
           <Text style={styles.sectionTitle}>AZIONI</Text>
 
-          <Pressable style={styles.actionButton} onPress={() => router.push('/(tabs)/inventory')}>
+          <Pressable style={styles.actionButton} onPress={() => router.push(`/(tabs)/?library=${library.id}` as any)}>
             <View style={[styles.actionIcon, { backgroundColor: theme.primary }]}>
               <MaterialIcons name="list" size={24} color="#FFF" />
             </View>

@@ -79,7 +79,7 @@ export default function SectorTemplatesScreen() {
             return;
         }
 
-        Alert.prompt?.(
+        (Alert as any).prompt?.(
             'Nome Modello',
             'Dai un nome al tuo modello personalizzato:',
             async (name: string) => {

@@ -168,7 +168,7 @@ export default function TrashScreen() {
                                     {item.furType} - {item.location}
                                 </Text>
                                 <Text style={styles.deletedDate}>
-                                    Eliminato il {new Date(item.deletedAt).toLocaleDateString('it-IT')}
+                                    Eliminato il {new Date(item.deletedAt!).toLocaleDateString('it-IT')}
                                 </Text>
                             </View>
                             <View style={styles.actions}>

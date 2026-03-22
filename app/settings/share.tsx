@@ -15,7 +15,7 @@ export default function ShareSettingsScreen() {
             {/* Header */}
             <View style={styles.header}>
                 <Pressable onPress={() => router.back()} style={styles.backButton}>
-                    <MaterialIcons name="arrow-back" size={24} color={theme.text} />
+                    <MaterialIcons name="arrow-back" size={24} color={theme.textPrimary} />
                 </Pressable>
                 <Text style={styles.headerTitle}>Configurazione Condivisione</Text>
             </View>
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         lineHeight: 20,
         flex: 1,
-        color: theme.text,
+        color: theme.textPrimary,
     },
     sectionTitle: {
         ...typography.sectionHeader,
